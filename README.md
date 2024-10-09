@@ -36,7 +36,7 @@ This code requires:
 
 Setup conda env:
 ```shell
-conda env create -f environment.yml
+conda env create -n ud python==3.9
 conda activate ud
 ```
 
