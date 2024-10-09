@@ -33,11 +33,8 @@ note={under review}
 ## Table of Contents
 
 * [Overview](#Overview)
-* [Installation](#Installation)
-* [Code Structure](#code-structure)
+* [Getting started](#getting-started)
 * [Quick Start](#quick-start)
-* [Supported Methods](#supported-methods)
-* [Unsupervised Methods](#unsupervised-methods)
 
 ## Overview
 
@@ -70,24 +67,26 @@ You can run the following script to configurate necessary environment:
 conda create -n UD python=3.9
 conda activate UD
 pip install -r requirements.txt
-
+```
 
 ## Download dataset
-Please download CIFAR-10 and CIFAR-100 to get poisoned dataset yourself, and put them into `dataset\`. We recommend using the [benchmark](https://openreview.net/pdf?id=igJ2XPNYbJ) to generate availability attack related data.
+Please download CIFAR-10 and CIFAR-100 to get poisoned dataset yourself, and put them into `dataset\`. We recommend using the [benchmark](https://openreview.net/pdf?id=igJ2XPNYbJ) to generate availability attack related samples.
 
 ## Quick Start
 
 **Step 1: Sharpness-Aware Learning (SAL) on poisoned datasets**: 
 If you have already generated poisoned dataset, you can train the model with a demo script below:
 ```bash
-python train_sharp.py --dataset <Dataset> --<Defense> --arch <Model_arch> --type <Attack>
+python poison_train_sharp.py --dataset <Dataset> --<Defense> --arch <Model_arch> --type <Attack>
 ```
 The parameter choices for the above commands are as follows:
 - --dataset `<Dataset>`: `c10` , `c100`.
 - --`<Defense>`: `nodefense`, `cutout`, `cutmix`, `mixup`, `mixup`, `bdr`, `gray`, `jpeg`, `gaussian`, `ueraser`, `at`.
 - --arch `<Model_arch>`: `r18`, `r50`, `se18`, `vit`.
 - --type `<Attack>`: `ar`, `dc`, `em`, `rem`, `hypo`, `tap`, `lsp`, `ntga`, `ops`.
-  
+- --on_test SAL on trainning phase.
+- --ft whether train from scratch.
+
 The trained checkpoints will be saved at `log/<Dataset>/<Attack>/`.
 You need to confirm that the target poisoned dataset has been generated in advance.
 
