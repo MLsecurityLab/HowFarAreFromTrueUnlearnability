@@ -14,10 +14,6 @@ from util_sharp import *
 from tensorboardX import SummaryWriter
 
 def layer_sharpness(args, model, criterion,trainloader=None,epsilon=0.1,test_acc=0,test_loss=0,epoch=0,sharp_lr_min=0.01,sharp_lr_max=0.01):
-    # if "CIFAR" in args.dataset:
-    #     norm_layer = Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2471, 0.2435, 0.2616])
-    # else:
-    #     norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     model = model.cuda()
     if trainloader is None:
         # original dataset
@@ -44,8 +40,6 @@ def layer_sharpness(args, model, criterion,trainloader=None,epsilon=0.1,test_acc
             
             origin_acc /= origin_total
             origin_loss /= origin_total
-    # print('test_loss',test_loss)
-    # print('origin_loss',origin_loss,origin_total)
     args.logger.info("{:25}, Loss: {:8.4f}, Acc: {:5.3f}".format("Origin", origin_loss, origin_acc*100))
 
     model.eval()
@@ -63,7 +57,6 @@ def layer_sharpness(args, model, criterion,trainloader=None,epsilon=0.1,test_acc
     
     for layer_name, module in model.named_parameters():
         if "weight" in layer_name and layer_name[:-len(".weight")] in layer_sharpness_dict_loss.keys():
-            # print(layer_name)
             cloned_model_min = deepcopy(model)
             cloned_model_max = deepcopy(model)
             # set requires_grad sign for each layer
@@ -215,12 +208,8 @@ def train(model, trainloader, optimizer, criterion, device, epoch, args):
         cutmix = K.RandomCutMixV2(data_keys=["input", "class"])
     elif args.mixup:
         mixup = K.RandomMixUpV2(data_keys=["input", "class"])
-
-    # for batch_idx, (inputs, targets, inputs_clean) in enumerate(trainloader):
+        
     for batch_idx, (inputs, targets) in enumerate(trainloader):
-        # bs = inputs.shape[0]
-        # num_poisons = bs * args.ratio // 100
-        # inputs[num_poisons:] = inputs_clean[num_poisons:]
         inputs, targets = inputs.to(device), targets.to(device)
 
         optimizer.zero_grad()
@@ -412,7 +401,7 @@ def main():
     sharp_dataset_name = 'test' if args.on_test else 'train'
     finetune_name = 'finetune' if args.ft else 'scratch'
     suffix = '{}_lr={}_epochs={}_sharplr={}-{}_iter={}-eps={}'.format(proj_name,args.lr, args.epochs, args.sharp_lr_min, args.sharp_lr_max,args.iter_num,args.param_eps)
-    model_save_dir = os.path.join('exp_iclr',args.dataset,args.arch,'clean' if args.clean else args.type,sharp_dataset_name,finetune_name,suffix)
+    model_save_dir = os.path.join('exp',args.dataset,args.arch,'clean' if args.clean else args.type,sharp_dataset_name,finetune_name,suffix)
     os.makedirs(model_save_dir,exist_ok=True)
 
     logger = create_logger(os.path.join(model_save_dir,'output.log'))
@@ -489,8 +478,7 @@ def main():
         dir,
         f"defense={defense}-repeat={args.repeat_epoch}-poison_ratio={args.ratio}-arch={args.arch}.pth",
     )
-    # test_acc,test_loss = test(model, test_loader, criterion, device,logger)
-    # layer_sharpness(args, deepcopy(model),criterion,trainloader=test_loader,epsilon=0.1,epoch=0)
+
     if args.ft:
         if args.arch == "vit" or args.arch == "cait":
             ft_optimizer = optim.Adam(model.parameters(), lr=args.lr)
